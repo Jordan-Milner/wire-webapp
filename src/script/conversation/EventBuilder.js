@@ -239,3 +239,5 @@ z.conversation.EventBuilder = {
     };
   },
 };
+
+export const EventBuilder = z.conversation.EventBuilder;
