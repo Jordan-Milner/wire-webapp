@@ -32,17 +32,7 @@ import {CallTelemetry} from '../telemetry/calling/CallTelemetry';
 import {CallMessageBuilder} from './CallMessageBuilder';
 import {CallEntity} from './entities/CallEntity';
 import {CallMessageEntity} from './entities/CallMessageEntity';
-import {
-  callStart,
-  callCreate,
-  callEnd,
-  callConfigUpdate,
-  callReceiveMessage,
-  setCallStateHandler,
-  CALL_TYPE,
-  CALL_STATE,
-  CONVERSATION_TYPE,
-} from './callAPI';
+import {callEnd, setCallStateHandler, CALL_TYPE, CALL_STATE, CONVERSATION_TYPE} from './callAPI';
 
 import {CALL_MESSAGE_TYPE} from './enum/CallMessageType';
 import {PROPERTY_STATE} from './enum/PropertyState';
@@ -57,6 +47,8 @@ import {MediaType} from '../media/MediaType';
 import {ClientEvent} from '../event/Client';
 import {WebAppEvents} from '../event/WebApp';
 import {EventRepository} from '../event/EventRepository';
+
+import {getAvsInstance} from './avs/avs_wcall';
 
 export class CallingRepository {
   static get CONFIG() {
@@ -89,21 +81,34 @@ export class CallingRepository {
   ) {
     this.getConfig = this.getConfig.bind(this);
 
-    this.callingAccount = ko.pureComputed(() => {
+    this.callingAccount = undefined;
+    this.callingApi = undefined;
+
+    ko.computed(() => {
       if (userRepository.self() && clientRepository.currentClient()) {
-        return callCreate(userRepository.self().id, clientRepository.currentClient().id, {
-          requestConfig: () => {
+        getAvsInstance().then(callingApi => {
+          callingApi.init();
+          const requestConfig = () => {
             this.getConfig().then(({ice_servers}) => {
-              callConfigUpdate({
+              const config = {
                 bundlePolicy: 'max-bundle',
                 iceServers: ice_servers,
                 rtcpMuxPolicy: 'require', // @deprecated Default value beginning Chrome 57
-              });
+              };
+              callingApi.config_update(this.callingAccount, 0, JSON.stringify(config));
             });
             return 0;
-          },
+          };
 
-          sendMessage: (context, conversationId, userId, clientId, destinationUserId, destinationClientId, payload) => {
+          const sendMessage = (
+            context,
+            conversationId,
+            userId,
+            clientId,
+            destinationUserId,
+            destinationClientId,
+            payload
+          ) => {
             const protoCalling = new Calling({content: payload});
             const genericMessage = new GenericMessage({
               [z.cryptography.GENERIC_MESSAGE_TYPE.CALLING]: protoCalling,
@@ -114,7 +119,24 @@ export class CallingRepository {
             const eventInfoEntity = new z.conversation.EventInfoEntity(genericMessage, conversationId /*, options*/);
             this.conversationRepository.sendCallingMessage(eventInfoEntity, conversationId);
             return 0;
-          },
+          };
+          const account = callingApi.create(
+            userRepository.self().id,
+            clientRepository.currentClient().id,
+            () => 0, //readyh,
+            sendMessage, //sendh,
+            () => 0, //incomingh,
+            () => 0, //missedh,
+            () => 0, //answerh,
+            () => 0, //estabh,
+            () => 0, //closeh,
+            () => 0, //metricsh,
+            requestConfig, //cfg_reqh,
+            () => 0, //acbrh,
+            () => 0 //vstateh,
+          );
+          this.callingAccount = account;
+          this.callingApi = callingApi;
         });
       }
     });
@@ -250,8 +272,8 @@ export class CallingRepository {
   onCallEvent(event, source) {
     if (!window.callv1) {
       const {content, conversation: conversationId, from: userId, sender: clientId, time} = event;
-      callReceiveMessage(
-        this.callingAccount(),
+      this.callingApi.recv_msg(
+        this.callingAccount,
         JSON.stringify(content),
         content.length,
         12,
@@ -1323,7 +1345,13 @@ export class CallingRepository {
    */
   _joinCall(conversationEntity, mediaType, callState, callEntity) {
     if (!window.callv1) {
-      callStart(this.callingAccount(), conversationEntity.id, CALL_TYPE.AUDIO, CONVERSATION_TYPE.ONEONONE, false);
+      this.callingApi.start(
+        this.callingAccount,
+        conversationEntity.id,
+        CALL_TYPE.FORCED_AUDIO,
+        CONVERSATION_TYPE.ONEONONE,
+        false
+      );
     } else {
       this._checkCallingSupport(conversationEntity, mediaType, callState)
         .then(() => this._checkConcurrentJoinedCall(conversationEntity.id, callState))
