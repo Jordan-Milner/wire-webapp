@@ -19,6 +19,7 @@
 
 import adapter from 'webrtc-adapter';
 import {Calling, GenericMessage} from '@wireapp/protocol-messaging';
+import Logger from 'utils/Logger';
 
 import {t} from 'Util/LocalizerUtil';
 import {TimeUtil} from 'Util/TimeUtil';
@@ -127,9 +128,10 @@ export class CallingRepository {
             () => 0, //acbrh,
             () => 0 //vstateh,
           );
+          const avsLogger = Logger('avs');
           callingApi.set_log_handler((level, message) => {
             // TODO handle levels
-            this.callLogger.debug(message);
+            avsLogger.debug(message);
           });
 
           callingApi.set_state_handler(wUser, (conversationId, state) => {
@@ -974,7 +976,14 @@ export class CallingRepository {
    * @returns {undefined} No return value
    */
   joinCall(conversationId, mediaType) {
+    // TODO, deduce call type from media type
+    // TODO pass on the conversation type
     this.callingApi.start(this.wUser, conversationId, CALL_TYPE.FORCED_AUDIO, CONVERSATION_TYPE.ONEONONE, false);
+  }
+
+  answerCall(conversationId, mediaType) {
+    // TODO, deduce the call type from the media type
+    this.callingApi.answer(this.wUser, conversationId, CALL_TYPE.FORCED_AUDIO, false);
   }
 
   /**
