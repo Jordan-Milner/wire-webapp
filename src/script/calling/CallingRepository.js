@@ -81,7 +81,7 @@ export class CallingRepository {
   ) {
     this.getConfig = this.getConfig.bind(this);
 
-    this.callingAccount = undefined;
+    this.wUser = undefined;
     this.callingApi = undefined;
     this.activeCalls = ko.observableArray();
 
@@ -90,7 +90,7 @@ export class CallingRepository {
         getAvsInstance().then(callingApi => {
           callingApi.init();
           const requestConfig = () => {
-            this.getConfig().then(config => callingApi.config_update(this.callingAccount, 0, JSON.stringify(config)));
+            this.getConfig().then(config => callingApi.config_update(this.wUser, 0, JSON.stringify(config)));
             return 0;
           };
 
@@ -114,7 +114,7 @@ export class CallingRepository {
             this.conversationRepository.sendCallingMessage(eventInfoEntity, conversationId);
             return 0;
           };
-          const account = callingApi.create(
+          const wUser = callingApi.create(
             userRepository.self().id,
             clientRepository.currentClient().id,
             () => 0, //readyh,
@@ -129,8 +129,12 @@ export class CallingRepository {
             () => 0, //acbrh,
             () => 0 //vstateh,
           );
+          callingApi.set_log_handler((level, message) => {
+            // TODO handle levels
+            this.callLogger.debug(message);
+          });
 
-          callingApi.set_state_handler(account, (conversationId, state) => {
+          callingApi.set_state_handler(wUser, (conversationId, state) => {
             const call = this.activeCalls().find(callInstance => callInstance.conversationId === conversationId) || {
               conversationId,
               startedAt: ko.observable(),
@@ -158,7 +162,7 @@ export class CallingRepository {
               this.activeCalls.push(call);
             }
           });
-          this.callingAccount = account;
+          this.wUser = wUser;
           this.callingApi = callingApi;
 
           setInterval(callingApi.poll, 500);
@@ -271,7 +275,7 @@ export class CallingRepository {
       const toSecond = timestamp => Math.floor(timestamp / 1000);
       const contentStr = JSON.stringify(content);
       const res = this.callingApi.recv_msg(
-        this.callingAccount,
+        this.wUser,
         contentStr,
         contentStr.length,
         toSecond(currentTimestamp),
@@ -1020,7 +1024,7 @@ export class CallingRepository {
    */
   leaveCall(conversationId, terminationReason) {
     if (!window.callv1) {
-      this.callingApi.end(this.callingAccount, conversationId);
+      this.callingApi.end(this.wUser, conversationId);
       return;
     }
     this.getCallById(conversationId)
@@ -1347,7 +1351,7 @@ export class CallingRepository {
   _joinCall(conversationEntity, mediaType, callState, callEntity) {
     if (!window.callv1) {
       this.callingApi.start(
-        this.callingAccount,
+        this.wUser,
         conversationEntity.id,
         CALL_TYPE.FORCED_AUDIO,
         CONVERSATION_TYPE.ONEONONE,
