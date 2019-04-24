@@ -1557,7 +1557,7 @@
   resolved "https://registry.yarnpkg.com/@wireapp/lru-cache/-/lru-cache-3.1.0.tgz#a3e227d6a8c272f1c97e278e81a246dbbbe9b114"
   integrity sha512-ezztPKzZx3yfiBzmizoMtUvWvMF2lJaK2VwZwoGYpXXix+26P9fdgigch3UB58uGrd73l0W7nXMWRHDJB1uUYA==
 
-"@wireapp/prettier-config@0.2.0":
+"@wireapp/prettier-config@0.2.0", "@wireapp/prettier-config@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@wireapp/prettier-config/-/prettier-config-0.2.0.tgz#822f5d1db902550c09c8ef5efda2a36ca263a481"
   integrity sha512-wgFtwop3vWW1MaXwkcbDiwM9NP1JHRWwr09RLTAMQhCs9J1z8ciBnfpty/LxY2LXTRWZt1gEL2a+am/a0xpVPA==
@@ -2153,6 +2153,12 @@ autoprefixer@^7.1.1:
     num2fraction "^1.2.2"
     postcss "^6.0.13"
     postcss-value-parser "^3.2.3"
+
+avs-web@./avs-web-0.0.1.tgz:
+  version "0.0.1"
+  resolved "./avs-web-0.0.1.tgz#38ed567556b7fa9ec69065b970e9e1b1850c2dcc"
+  dependencies:
+    "@wireapp/prettier-config" "^0.2.0"
 
 aws-sdk@2.0.x:
   version "2.0.31"
