@@ -32,7 +32,6 @@ import {CallTelemetry} from '../telemetry/calling/CallTelemetry';
 
 import {CallMessageBuilder} from './CallMessageBuilder';
 import {CallEntity} from './entities/CallEntity';
-import {CALL_TYPE, CALL_STATE, CONVERSATION_TYPE} from './callAPI';
 
 import {CALL_MESSAGE_TYPE} from './enum/CallMessageType';
 import {PROPERTY_STATE} from './enum/PropertyState';
@@ -43,11 +42,10 @@ import {ModalsViewModel} from '../view_model/ModalsViewModel';
 import {EventInfoEntity} from '../conversation/EventInfoEntity';
 import {MediaType} from '../media/MediaType';
 
-import {ClientEvent} from '../event/Client';
 import {WebAppEvents} from '../event/WebApp';
 import {EventRepository} from '../event/EventRepository';
 
-import {getAvsInstance} from 'avs-web';
+import {getAvsInstance, CALL_TYPE, STATE as CALL_STATE, CONV_TYPE} from 'avs-web';
 
 export class CallingRepository {
   static get CONFIG() {
@@ -115,7 +113,7 @@ export class CallingRepository {
             });
 
             //const options = {precondition, recipients};
-            const eventInfoEntity = new z.conversation.EventInfoEntity(genericMessage, conversationId /*, options*/);
+            const eventInfoEntity = new EventInfoEntity(genericMessage, conversationId /*, options*/);
             this.conversationRepository.sendCallingMessage(eventInfoEntity, conversationId);
             return 0;
           };
@@ -986,7 +984,7 @@ export class CallingRepository {
   joinCall(conversationId, mediaType) {
     // TODO pass on the conversation type
     const callType = this.callTypeFromMediaType(mediaType);
-    this.callingApi.start(this.wUser, conversationId, callType, CONVERSATION_TYPE.ONEONONE, false);
+    this.callingApi.start(this.wUser, conversationId, callType, CONV_TYPE.ONEONONE, false);
   }
 
   answerCall(conversationId, mediaType) {
@@ -1001,9 +999,9 @@ export class CallingRepository {
 
   callTypeFromMediaType(mediaType) {
     const types = {
-      [z.media.MediaType.AUDIO]: CALL_TYPE.NORMAL,
-      [z.media.MediaType.AUDIO_VIDEO]: CALL_TYPE.VIDEO,
-      [z.media.MediaType.SCREEN]: CALL_TYPE.VIDEO,
+      [MediaType.AUDIO]: CALL_TYPE.NORMAL,
+      [MediaType.AUDIO_VIDEO]: CALL_TYPE.VIDEO,
+      [MediaType.SCREEN]: CALL_TYPE.VIDEO,
     };
 
     return types[mediaType] || CALL_TYPE.NORMAL;
@@ -1013,10 +1011,9 @@ export class CallingRepository {
    * User action to leave a call.
    *
    * @param {string} conversationId - ID of conversation to leave call in
-   * @param {TERMINATION_REASON} terminationReason - Reason for call termination
    * @returns {undefined} No return value
    */
-  leaveCall(conversationId, terminationReason) {
+  leaveCall(conversationId) {
     this.callingApi.end(this.wUser, conversationId);
   }
 
