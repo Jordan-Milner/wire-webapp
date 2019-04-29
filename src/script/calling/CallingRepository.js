@@ -19,7 +19,7 @@
 
 import adapter from 'webrtc-adapter';
 import {Calling, GenericMessage} from '@wireapp/protocol-messaging';
-import {getLogger} from 'utils/Logger';
+import {getLogger} from 'Util/Logger';
 
 import {t} from 'Util/LocalizerUtil';
 import {TimeUtil} from 'Util/TimeUtil';
@@ -39,6 +39,11 @@ import {WebAppEvents} from '../event/WebApp';
 import {EventRepository} from '../event/EventRepository';
 
 import {getAvsInstance, CALL_TYPE, STATE as CALL_STATE, CONV_TYPE} from 'avs-web';
+
+const AVS_ENV = {
+  DEFAULT: 0,
+  FIREFOX: 1,
+};
 
 export class CallingRepository {
   static get CONFIG() {
@@ -141,7 +146,9 @@ export class CallingRepository {
       avsLogger.debug(message);
     });
 
-    callingApi.init();
+    const avsEnv = Environment.browser.firefox ? AVS_ENV.FIREFOX : AVS_ENV.DEFAULT;
+    callingApi.init(avsEnv);
+    //callingApi.setUserMediaHandler(console.log);
     const requestConfig = () => {
       this.getConfig().then(config => callingApi.config_update(this.wUser, 0, JSON.stringify(config)));
       return 0;
