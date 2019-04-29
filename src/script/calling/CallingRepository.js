@@ -38,12 +38,7 @@ import {MediaType} from '../media/MediaType';
 import {WebAppEvents} from '../event/WebApp';
 import {EventRepository} from '../event/EventRepository';
 
-import {getAvsInstance, CALL_TYPE, STATE as CALL_STATE, CONV_TYPE} from 'avs-web';
-
-const AVS_ENV = {
-  DEFAULT: 0,
-  FIREFOX: 1,
-};
+import {getAvsInstance, CALL_TYPE, STATE as CALL_STATE, CONV_TYPE, ENV as AVS_ENV} from 'avs-web';
 
 export class CallingRepository {
   static get CONFIG() {
@@ -140,6 +135,12 @@ export class CallingRepository {
   }
 
   configureCallingApi(callingApi, selfUserId, selfClientId) {
+    const log = name => {
+      return function() {
+        // eslint-disable-next-line no-console
+        console.log('avs_cb', name, arguments);
+      };
+    };
     const avsLogger = getLogger('avs');
     callingApi.set_log_handler((level, message) => {
       // TODO handle levels
@@ -148,7 +149,7 @@ export class CallingRepository {
 
     const avsEnv = Environment.browser.firefox ? AVS_ENV.FIREFOX : AVS_ENV.DEFAULT;
     callingApi.init(avsEnv);
-    //callingApi.setUserMediaHandler(console.log);
+    callingApi.setUserMediaHandler(log('userMediaHandler'));
     const requestConfig = () => {
       this.getConfig().then(config => callingApi.config_update(this.wUser, 0, JSON.stringify(config)));
       return 0;
@@ -183,12 +184,6 @@ export class CallingRepository {
       storedCall.reason(reason);
     };
 
-    const log = name => {
-      return function() {
-        // eslint-disable-next-line no-console
-        console.log('avs_cb', name, arguments);
-      };
-    };
     const wUser = callingApi.create(
       selfUserId,
       selfClientId,

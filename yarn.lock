@@ -2156,7 +2156,7 @@ autoprefixer@^7.1.1:
 
 avs-web@./avs-web-5.0.0.tgz:
   version "5.0.0"
-  resolved "./avs-web-5.0.0.tgz#0c2f4dd36f1fb1323733bbb5595de31aac295093"
+  resolved "./avs-web-5.0.0.tgz#7cdd9e771dbf043de33e52b2077a7da3bc830d22"
 
 aws-sdk@2.0.x:
   version "2.0.31"
@@ -12938,7 +12938,6 @@ wide-align@^1.1.0:
 
 "wire-web-config-default-staging@https://github.com/wireapp/wire-web-config-default#v0.17.27":
   version "0.17.27"
-  uid "5f41cf8a2532fc367d1dd4bce54fc3982dbbe306"
   resolved "https://github.com/wireapp/wire-web-config-default#5f41cf8a2532fc367d1dd4bce54fc3982dbbe306"
   dependencies:
     adm-zip "0.4.13"
