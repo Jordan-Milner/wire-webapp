@@ -210,9 +210,7 @@ z.conversation.EventBuilder = {
       type: ClientEvent.CONVERSATION.UNABLE_TO_DECRYPT,
     };
   },
-  buildVoiceChannelActivate(callMessageEntity) {
-    const {conversationId, userId, time} = callMessageEntity;
-
+  buildVoiceChannelActivate(conversationId, userId, time) {
     return {
       conversation: conversationId,
       from: userId,
@@ -222,10 +220,7 @@ z.conversation.EventBuilder = {
       type: ClientEvent.CONVERSATION.VOICE_CHANNEL_ACTIVATE,
     };
   },
-  buildVoiceChannelDeactivate(callMessageEntity, reason, currentTimestamp = 0) {
-    const {conversationId, userId} = callMessageEntity;
-    const time = callMessageEntity.time || new Date(currentTimestamp).toISOString();
-
+  buildVoiceChannelDeactivate(conversationId, userId, reason, time) {
     return {
       conversation: conversationId,
       data: {
