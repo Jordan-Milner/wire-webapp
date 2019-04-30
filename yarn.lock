@@ -2154,10 +2154,6 @@ autoprefixer@^7.1.1:
     postcss "^6.0.13"
     postcss-value-parser "^3.2.3"
 
-avs-web@./avs-web-5.0.0.tgz:
-  version "5.0.0"
-  resolved "./avs-web-5.0.0.tgz#71534193d00a95850ff21a2b31c20085e0b1c25a"
-
 avs-web@./avs-web-5.1.0.tgz:
   version "5.1.0"
   resolved "./avs-web-5.1.0.tgz#b00589cf658b3aa7b66c1b5a869c4b8a4149b8e6"
