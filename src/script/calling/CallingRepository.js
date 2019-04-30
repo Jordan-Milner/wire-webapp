@@ -880,7 +880,7 @@ gled
    * @returns {undefined} No return value
    */
   leaveCallOnUnload() {
-    // TODO
+    this.activeCalls().forEach(callInstance => this.callingApi.end(this.wUser, callInstance.conversationId));
   }
 
   //##############################################################################
